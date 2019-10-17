@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>ASCII-WebGL</title>
+  </head>
+  <body>
+    <canvas id="glCanvas" width="640" height="640" style="margin: 0 auto; display:block"></canvas>
+    <canvas id="canvas" width="550" height="300" style="display:none" ></canvas>
+
+    <div style="margin: 0 auto; position: absolute; bottom: 0; width: 300px">
+      <div>
+        <input type="range" id="sizeSlider" name="size" min="10" max="50" step="5" value="16">
+        <label for="size">Font Size</label>
+      </div>
+
+      <div>
+        <input type="checkbox" id="colorCheckbox" name="colorCheckbox" checked>
+        <label for="colorCheckbox">Colorize</label>
+      </div>
+
+      <div>
+        <input type="checkbox" id="muteCheckbox" name="muteCheckbox" checked>
+        <label for="muteCheckbox">Mute</label>
+      </div>
+      <div>
+          <input type="radio" id="videoSourceSimpsons"
+           name="videoSource" value="simpsons" checked>
+          <label for="videoSourceSimpsons">Simpsons</label>
+
+          <input type="radio" id="videoSourceWebcam"
+           name="videoSource" value="webcam">
+          <label for="videoSourceWebcam">Webcam</label>
+        </div>
+
+    </div>
+    <script src="dist/main.js"></script>
+  </body>
+</html>
