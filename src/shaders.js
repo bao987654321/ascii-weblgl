@@ -19,10 +19,12 @@ attribute vec2 a_center;
 
 uniform sampler2D u_image;
 
+uniform bool u_hasColor;
 uniform vec2 u_texsize;
 uniform float u_texStep;
 uniform float u_asciiCount;
-uniform bool u_hasColor;
+uniform float u_charsPerRow;
+
 varying vec3 instanceColors;
 varying vec2 v_texcoord;
 
@@ -48,7 +50,11 @@ void main() {
     }
 
 
-    float offset = floor(luminance * u_asciiCount)*u_texStep;
-    v_texcoord = (vec2(offset, 0) + a_texcoord) / u_texsize;
+    float offset = floor(luminance * u_asciiCount);
+
+    float xOffset = mod(offset, u_charsPerRow);
+    float yOffset = (offset - xOffset) / u_charsPerRow;
+
+    v_texcoord = (vec2(xOffset, yOffset) * u_texStep + a_texcoord) / u_texsize;
 }
 `;

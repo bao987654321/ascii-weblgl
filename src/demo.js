@@ -6,7 +6,6 @@ const SIMSPONS_URL = 'simpsons.mp4'
 
 export default class Demo  {
   constructor() {
-    // const canvas = document.getElementById("glCanvas");
     const canvas = document.querySelector("#glCanvas");
     this.canvas = canvas;
     if (canvas.getContext("webgl") === null) {
@@ -17,6 +16,8 @@ export default class Demo  {
     const tempCanvas = document.getElementById('canvas');
     this.asciiBoard = new ASCIIBoard(tempCanvas, canvas);
     this.video = document.createElement('video');
+
+    // document.body.appendChild(this.video)
     this.isMuted = true;
 
     this.setCanvasSize(640, 640)
@@ -49,6 +50,12 @@ export default class Demo  {
         this.startWebcam();
       }
     })
+    document.getElementById('playButton').addEventListener('click', e => {
+      console.log('playing videob ')
+      this.video.play();
+    })
+
+
   }
 
   startSimpsons() {
@@ -97,6 +104,7 @@ export default class Demo  {
     video.autoplay = true;
     video.loop = true;
     video.muted = true;
+    video.setAttribute('playsinline', true)
 
     if (isWebcam) {
       video.srcObject = src;

@@ -1,16 +1,22 @@
 import {asciiFrag, asciiVert} from './shaders';
 import {initShaderProgram} from './webgl-utils';
 
+
+
 export default class ASCIIBoard {
   constructor(textCanvas, glCanvas) {
     const startASCII = 32;
-    const defaultSize = 40;
+    const defaultSize = 20;
     this.textCanvas = textCanvas;
     this.glCanvas = glCanvas;
+    this.charsPerRow = 20;
     this.chars = (new Array(300)).fill(0).map((_, i) => String.fromCharCode(startASCII+i));
     this.gl = glCanvas.getContext("webgl");
     this.hasColor = true;
     this.videoReady = false;
+
+    console.log('max permetner ', this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE));
+
 
     this.setViewport();
     this.createTextData(defaultSize);
@@ -35,15 +41,17 @@ export default class ASCIIBoard {
   }
 
   createTextData(size) {
+
     const ctx = this.textCanvas.getContext('2d');
 
-    const height = size;
-     // add one to the width for the space we will add later
-    const width = size * this.chars.length + 1;
+     // add one to the length for the `" "` we will add later
+    const height = size * Math.ceil((this.chars.length + 1) / this.charsPerRow);
+    const width = size * this.charsPerRow;
     this.textCanvas.width = width;
     this.textCanvas.height = height;
     const {atlasMap, textureData: firstTextureData} = this.drawTextToCanvas(this.chars, width, height, size);
     const charsInfo = this.getCharsInfo(atlasMap, size, width, firstTextureData);
+    console.log(charsInfo)
     const sortedChars =this.sortChars(charsInfo);
 
     const boxHeight = sortedChars.reduce((memo, a) =>  Math.max(memo, charsInfo[a].boxHeight), 0);
@@ -98,8 +106,10 @@ export default class ASCIIBoard {
     const widths = data.map(d => d.boxWidth);
     const heights = data.map(d => d.boxHeight);
 
-    const widthThreshold = this.getPercentile(widths, 75);
+    const widthThreshold = this.getPercentile(widths, 90);
     const heightThreshold = this.getPercentile(heights, 75);
+    console.log('width threshold: ', widthThreshold)
+    console.log('height threshold: ', heightThreshold)
 
     const filtered = data.filter(d => {
       return (
@@ -108,6 +118,7 @@ export default class ASCIIBoard {
        d.darkness > 0
       );
     })
+    console.log(filtered.map(d => d.char))
     return filtered.sort((a, b) => b.darkness - a.darkness).map(d => d.char);
   }
 
@@ -131,7 +142,6 @@ export default class ASCIIBoard {
     }
     return count;
   }
-
 
   getBoxSize(x, y, width, height, imageWidth, data) {
     let boxWidth = 0;
@@ -220,6 +230,7 @@ export default class ASCIIBoard {
       u_image: this.gl.getUniformLocation(shaderProgram, 'u_image'),
       u_texStep: this.gl.getUniformLocation(shaderProgram, 'u_texStep'),
       u_hasColor: this.gl.getUniformLocation(shaderProgram, 'u_hasColor'),
+      u_charsPerRow: this.gl.getUniformLocation(shaderProgram, 'u_charsPerRow'),
     };
   }
 
@@ -319,7 +330,8 @@ export default class ASCIIBoard {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.textures.ascii);
     gl.uniform1i(this.uniformLocations.u_texture, 0);
-
+    console.log('textureWidth ', this.textureWidth);
+    console.log('textureHeight ', this.textureHeight);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.textureWidth, this.textureHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.textureData);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -333,6 +345,7 @@ export default class ASCIIBoard {
     this.gl.uniform1i(this.uniformLocations.u_image, 1);
     this.gl.uniform1f(this.uniformLocations.u_texStep, this.textureStepSize);
     this.gl.uniform1i(this.uniformLocations.u_hasColor, this.hasColor);
+    this.gl.uniform1f(this.uniformLocations.u_charsPerRow, this.charsPerRow);
   }
 
   draw(image) {
