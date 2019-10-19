@@ -3,7 +3,6 @@ import ASCIIBoard from './ascii';
 const SIMSPONS = 'simpsons';
 const WEBCAM = 'webcam';
 const SIMSPONS_URL = 'simpsons.mp4'
-
 export default class Demo  {
   constructor() {
     const canvas = document.querySelector("#glCanvas");
@@ -15,14 +14,25 @@ export default class Demo  {
 
     const tempCanvas = document.getElementById('canvas');
     this.asciiBoard = new ASCIIBoard(tempCanvas, canvas);
-    this.video = document.createElement('video');
 
-    // document.body.appendChild(this.video)
     this.isMuted = true;
 
-    this.setCanvasSize(640, 640)
+    this.setCanvasSize(20, 20)
     this.attachButtonListeners();
     this.startSimpsons();
+  }
+
+  createVideoElement() {
+    const elm = document.createElement('video');
+    elm.muted = true;
+    elm.loop = true;
+    elm.autoplay = true;
+    elm.setAttribute('playsinline', true)
+    elm.setAttribute('muted', true)
+    elm.setAttribute('style', "width: 1px; height: 1px; position: absolute");
+    const canvas = document.querySelector("#glCanvas");
+    document.body.insertBefore(elm, canvas);
+    return elm;
   }
 
   attachButtonListeners() {
@@ -30,13 +40,15 @@ export default class Demo  {
       this.asciiBoard.setSize(+e.target.value);
     })
 
+    document.addEventListener('scroll', () => {
+      this.moveVideo(window.pageXOffset, window.pageYOffset);
+    })
     document.getElementById('colorCheckbox').addEventListener('change', e => {
       this.asciiBoard.setHasColor(e.target.checked);
     })
 
     document.getElementById('muteCheckbox').addEventListener('change', e => {
-      this.isMuted = e.target.checked;
-      this.video.muted = this.isMuted;
+      this.mute(e.target.checked);
     })
 
     document.getElementById('videoSourceSimpsons').addEventListener('change', e => {
@@ -50,12 +62,12 @@ export default class Demo  {
         this.startWebcam();
       }
     })
-    document.getElementById('playButton').addEventListener('click', e => {
-      console.log('playing videob ')
-      this.video.play();
-    })
+  }
 
-
+  moveVideo(x, y) {
+    const offset = 10;
+    this.video.style.top = `${y + offset}px`;
+    this.video.style.left = `${x + offset}px`;
   }
 
   startSimpsons() {
@@ -64,12 +76,13 @@ export default class Demo  {
   }
 
   startWebcam() {
-    const constraints = {audio: false, video: true};
+    const constraints = {audio: false, video: {facingMode: "environment" }};
     navigator.mediaDevices.getUserMedia(constraints)
     .then(stream => {
       var videoTracks = stream.getVideoTracks();
       this.currentSource = WEBCAM;
       this.setUpVideo(stream, true)
+      console.log('video devices: ',  videoTracks);
       console.log('Using video device: ' + videoTracks[0].label);
       stream.onremovetrack = function() {
         console.log('Stream ended');
@@ -82,18 +95,29 @@ export default class Demo  {
   }
 
   setCanvasSize(width, height){
-    // TODO: Fill window
+    const aspectRatio = width/height;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
     const devicePixelRatio = window.devicePixelRatio || 1;
-    this.canvas.width = width  * devicePixelRatio;
-    this.canvas.height = height * devicePixelRatio;
-    this.canvas.style.height = `${height}px`;
-    this.canvas.style.width = `${width}px`;
+    const useHeightAsMax = windowHeight * aspectRatio < windowWidth
+    const widthToUse = Math.floor(useHeightAsMax ? windowHeight * aspectRatio : windowWidth);
+    const heightToUse = Math.floor(useHeightAsMax ? windowHeight : windowWidth / aspectRatio) ;
+
+    this.canvas.width = widthToUse  * devicePixelRatio;
+    this.canvas.height = heightToUse * devicePixelRatio;
+    this.canvas.style.height = `${heightToUse}px`;
+    this.canvas.style.width = `${widthToUse}px`;
     this.asciiBoard.setViewport();
   }
 
+  mute(isMuted) {
+    this.isMuted = isMuted;
+    this.video.mute = isMuted;
+  }
 
   setUpVideo(src, isWebcam = false) {
-    const video = this.video;
+    const video = this.createVideoElement();
+    this.video = video;
     if (this.cleanUpVideo) {
       this.cleanUpVideo();
     }
@@ -101,10 +125,6 @@ export default class Demo  {
     var playing = false;
     let timeupdate = false;
     let started = false;
-    video.autoplay = true;
-    video.loop = true;
-    video.muted = true;
-    video.setAttribute('playsinline', true)
 
     if (isWebcam) {
       video.srcObject = src;
@@ -136,12 +156,13 @@ export default class Demo  {
     video.addEventListener('timeupdate', _timeUpdateCb, true);
 
     this.cleanUpVideo = () => {
+      const oldVideo = video;
+      console.log("cleaning up video")
       this.asciiBoard.pauseVideo();
-      video.pause();
-      video.src = null;
-      video.srcObject = null;
-      video.removeEventListener('playing', _playingCb, true,)
-      video.removeEventListener('timeupdate', _timeUpdateCb, true,)
+      oldVideo.pause();
+      oldVideo.removeEventListener('playing', _playingCb, true,)
+      oldVideo.removeEventListener('timeupdate', _timeUpdateCb, true,)
+      document.body.removeChild(oldVideo);
     }
 
     video.play()
