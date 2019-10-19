@@ -112,7 +112,7 @@ export default class Demo  {
 
   mute(isMuted) {
     this.isMuted = isMuted;
-    this.video.mute = isMuted;
+    this.video.muted = isMuted;
   }
 
   setUpVideo(src, isWebcam = false) {
