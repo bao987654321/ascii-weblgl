@@ -4,7 +4,7 @@ import './style.css';
 const SIMSPONS = 'simpsons';
 const WEBCAM = 'webcam';
 const SIMSPONS_URL = 'simpsons.mp4'
-const SHOW_CONTROLS_TIME_MS = 2500;
+const SHOW_CONTROLS_TIME_MS = 2000;
 export default class Demo  {
   constructor() {
     const canvas = document.querySelector("#glCanvas");
@@ -16,12 +16,12 @@ export default class Demo  {
 
     this.controlBoxElm = document.getElementById("controlBox");
     this.isControlsHidden = true;
+
     const tempCanvas = document.getElementById('canvas');
     this.asciiBoard = new ASCIIBoard(tempCanvas, canvas);
 
     this.isMuted = true;
 
-    this.setCanvasSize(20, 20)
     this.attachEventListeners();
     this.startSimpsons();
   }
@@ -74,6 +74,17 @@ export default class Demo  {
     document.addEventListener('touchstart', () => {
       this.showControlsBriefly();
     });
+
+  }
+
+  resizeScreen() {
+    // Set height using window.innerHeight instead of 'vh' includes the address bar on mobile
+    const elm = document.getElementById('glCanvasContainer');
+    elm.style.height = `${window.innerHeight}px`;
+
+    if (this.video.videoHeight && this.video.videoWidth) {
+      this.setCanvasSize(this.video.videoWidth, this.video.videoHeight)
+    }
   }
 
   moveVideo(x, y) {
@@ -144,13 +155,11 @@ export default class Demo  {
   }
 
   showControls() {
-    console.log('showing controlls');
     this.isControlsHidden = false;
     this.controlBoxElm.classList.remove('hide');
   }
 
   hideControls() {
-    console.log('hiding controlls');
     this.isControlsHidden = true;
     this.controlBoxElm.classList.add('hide');
   }
@@ -158,6 +167,7 @@ export default class Demo  {
   setUpVideo(src, isWebcam = false) {
     const video = this.createVideoElement();
     this.video = video;
+    this.moveVideo(window.pageXOffset, window.pageYOffset);
     if (this.cleanUpVideo) {
       this.cleanUpVideo();
     }
@@ -177,7 +187,7 @@ export default class Demo  {
       if (playing && timeupdate && !started) {
         started = true;
         video.muted = this.isMuted;
-        this.setCanvasSize(video.videoWidth, video.videoHeight)
+        this.resizeScreen();
         this.asciiBoard.playVideo(video, isWebcam);
       }
     }

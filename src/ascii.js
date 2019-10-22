@@ -51,7 +51,6 @@ export default class ASCIIBoard {
     this.textCanvas.height = height;
     const {atlasMap, textureData: firstTextureData} = this.drawTextToCanvas(this.chars, width, height, size);
     const charsInfo = this.getCharsInfo(atlasMap, size, width, firstTextureData);
-    console.log(charsInfo)
     const sortedChars =this.sortChars(charsInfo);
 
     const boxHeight = sortedChars.reduce((memo, a) =>  Math.max(memo, charsInfo[a].boxHeight), 0);
@@ -118,7 +117,6 @@ export default class ASCIIBoard {
        d.darkness > 0
       );
     })
-    console.log(filtered.map(d => d.char))
     return filtered.sort((a, b) => b.darkness - a.darkness).map(d => d.char);
   }
 
