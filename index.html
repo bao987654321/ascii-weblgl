@@ -3,36 +3,39 @@
   <head>
     <title>ASCII-WebGL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
   </head>
   <body>
-    <canvas id="glCanvas" width="640" height="640" style="margin: auto; display:block"></canvas>
-    <canvas id="canvas" width="550" height="300" style="display:none" ></canvas>
-    <div id="controlBox" style="margin: 0 auto;">
-      <div>
-        <input type="range" id="sizeSlider" name="size" min="10" max="50" step="5" value="16">
-        <label for="size">Font Size</label>
-      </div>
-
-      <div>
-        <input type="checkbox" id="colorCheckbox" name="colorCheckbox" checked>
-        <label for="colorCheckbox">Colorize</label>
-      </div>
-
-      <div>
-        <input type="checkbox" id="muteCheckbox" name="muteCheckbox" checked>
-        <label for="muteCheckbox">Mute</label>
-      </div>
-      <div>
-          <input type="radio" id="videoSourceSimpsons"
-           name="videoSource" value="simpsons" checked>
-          <label for="videoSourceSimpsons">Simpsons</label>
-
-          <input type="radio" id="videoSourceWebcam"
-           name="videoSource" value="webcam">
-          <label for="videoSourceWebcam">Webcam</label>
+    <div class="gl-canvas-container">
+      <canvas id="glCanvas" width="640" height="640"></canvas>
+    </div>
+    <canvas id="canvas" width="550" height="300"></canvas>
+    <div class="control-box-container">
+      <div id="controlBox" class="hide">
+        <div class="control-item">
+          <input type="range" id="sizeSlider" name="size" min="10" max="50" step="5" value="20">
+          <label for="size">Font Size</label>
         </div>
+        <div class="control-item">
+          <input type="checkbox" id="colorCheckbox" name="colorCheckbox" checked>
+          <label for="colorCheckbox">Colorize</label>
+        </div>
+        <div class="control-item">
+          <input type="checkbox" id="muteCheckbox" name="muteCheckbox">
+          <label for="muteCheckbox">Sound</label>
+        </div>
+        <div class="source-heading">
+          Source:
+        </div>
+        <div>
+            <input type="radio" id="videoSourceSimpsons"
+            name="videoSource" value="simpsons" checked>
+            <label for="videoSourceSimpsons">Simpsons</label>
 
+            <input type="radio" id="videoSourceWebcam"
+            name="videoSource" value="webcam">
+            <label for="videoSourceWebcam">Camera</label>
+          </div>
+      </div>
     </div>
     <script src="dist/main.js"></script>
   </body>

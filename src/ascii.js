@@ -370,15 +370,14 @@ export default class ASCIIBoard {
 
   playVideo(video) {
     this.pauseVideo();
-    const gl = this.gl;
-    gl.useProgram(this.shaderProgram);
+    this.gl.useProgram(this.shaderProgram);
     this.createPositionBuffer();
     this.bindBuffers();
     this.setAsciiTexture();
     this.setUniforms();
     this.renderVideo(video);
   }
-  // NEED TO UPDATE TO ONLY PLAY ONE VIDEO
+
   renderVideo(video) {
     this.loadFrameToTexture(video)
     this.drawScene();
@@ -386,6 +385,7 @@ export default class ASCIIBoard {
   }
 
   drawScene() {
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT)
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.buffers.vertex.numItems);
   }
 }

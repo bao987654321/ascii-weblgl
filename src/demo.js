@@ -1,8 +1,10 @@
 import ASCIIBoard from './ascii';
+import './style.css';
 
 const SIMSPONS = 'simpsons';
 const WEBCAM = 'webcam';
 const SIMSPONS_URL = 'simpsons.mp4'
+const SHOW_CONTROLS_TIME_MS = 2500;
 export default class Demo  {
   constructor() {
     const canvas = document.querySelector("#glCanvas");
@@ -12,13 +14,15 @@ export default class Demo  {
       return;
     }
 
+    this.controlBoxElm = document.getElementById("controlBox");
+    this.isControlsHidden = true;
     const tempCanvas = document.getElementById('canvas');
     this.asciiBoard = new ASCIIBoard(tempCanvas, canvas);
 
     this.isMuted = true;
 
     this.setCanvasSize(20, 20)
-    this.attachButtonListeners();
+    this.attachEventListeners();
     this.startSimpsons();
   }
 
@@ -30,12 +34,11 @@ export default class Demo  {
     elm.setAttribute('playsinline', true)
     elm.setAttribute('muted', true)
     elm.setAttribute('style', "width: 1px; height: 1px; position: absolute");
-    const canvas = document.querySelector("#glCanvas");
-    document.body.insertBefore(elm, canvas);
+    document.body.appendChild(elm);
     return elm;
   }
 
-  attachButtonListeners() {
+  attachEventListeners() {
     document.getElementById('sizeSlider').addEventListener('change', e => {
       this.asciiBoard.setSize(+e.target.value);
     })
@@ -43,12 +46,13 @@ export default class Demo  {
     document.addEventListener('scroll', () => {
       this.moveVideo(window.pageXOffset, window.pageYOffset);
     })
+
     document.getElementById('colorCheckbox').addEventListener('change', e => {
       this.asciiBoard.setHasColor(e.target.checked);
     })
 
     document.getElementById('muteCheckbox').addEventListener('change', e => {
-      this.mute(e.target.checked);
+      this.mute(!e.target.checked);
     })
 
     document.getElementById('videoSourceSimpsons').addEventListener('change', e => {
@@ -62,6 +66,14 @@ export default class Demo  {
         this.startWebcam();
       }
     })
+
+    document.addEventListener('mousemove', () => {
+      this.showControlsBriefly();
+    });
+
+    document.addEventListener('touchstart', () => {
+      this.showControlsBriefly();
+    });
   }
 
   moveVideo(x, y) {
@@ -113,6 +125,34 @@ export default class Demo  {
   mute(isMuted) {
     this.isMuted = isMuted;
     this.video.muted = isMuted;
+  }
+
+  showControlsBriefly() {
+    if (this.isControlsHidden) {
+      this.showControls();
+      this.hideControlsEvent = window.setTimeout(() => {
+        this.hideControls();
+      }, SHOW_CONTROLS_TIME_MS);
+      return;
+    }
+    if(this.hideControlsEvent) {
+      window.clearTimeout(this.hideControlsEvent);
+    }
+    this.hideControlsEvent = window.setTimeout(() => {
+        this.hideControls();
+    }, SHOW_CONTROLS_TIME_MS);
+  }
+
+  showControls() {
+    console.log('showing controlls');
+    this.isControlsHidden = false;
+    this.controlBoxElm.classList.remove('hide');
+  }
+
+  hideControls() {
+    console.log('hiding controlls');
+    this.isControlsHidden = true;
+    this.controlBoxElm.classList.add('hide');
   }
 
   setUpVideo(src, isWebcam = false) {
